@@ -1,0 +1,18 @@
+flowchart LR
+  U[Interface Streamlit\nquestion + photo] --> API[API FastAPI\nauth + groupes]
+  API -->|CP1 droits d'accès| ORCH[Orchestrateur LangGraph]
+  ORCH --> RAG[RAG multimodal\ntexte BGE-M3 + visuel CLIP\nRRF + reranker]
+  ORCH --> VLM[VLM Qwen2.5-VL-7B]
+  ORCH --> MCPC[Client MCP\nmax 3 appels]
+  MCPC -->|CP4 droits côté serveur| MCPS[Serveur MCP maintenance\nhistorique / tickets]
+  RAG --> VER[Vérification des citations\nCP3]
+  VLM --> VER
+  VER --> REP[Réponse sourcée\nou clarification]
+  ORCH -->|ticket demandé| HUM[Validation humaine\nCP2]
+  HUM -->|approval_token| MCPC
+  RAG --- Q[(Qdrant)]
+  RAG --- PG[(PostgreSQL)]
+  RAG --- S3[(MinIO)]
+  subgraph Ingestion
+    D[PDF / photos] --> OCR[OCR si scanné] --> CH[Découpage] --> EMB[Embeddings] --> Q
+  end
